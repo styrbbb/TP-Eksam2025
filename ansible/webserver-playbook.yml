@@ -1,0 +1,21 @@
+---
+- hosts: webservers
+  become: true
+  tasks:
+    - name: Check for apache2
+      ansible.builtin.stat:
+        path: "/lib/systemd/system/httpd.service"
+      register: service_unit
+
+    - name: Install apache2
+      become: true
+      ansible.builtin.dnf:
+        name: httpd
+        state: latest
+      when: not service_unit.stat.exists
+
+    - name: Autostart
+      ansible.builtin.service:
+        name: httpd
+        enabled: true
+        state: started
